@@ -1,47 +1,59 @@
-# Exercício Prático — Aula 05
+# Exercício da Aula 11: Formulários e Validação Básica
 
-**Nome:** José Roberto Santos Nascimento  
-**Data:** 17/08/2026
+**Instrumento de Avaliação oficial:** Exercício prático individual.
 
-## 1. Descreva as 2 telas e o que cada uma faz:
+## O que registrar aqui
 
-A primeira tela é a lista de pontos de coleta e distribuição do Instituto Mão Amiga. Ela mostra os pontos cadastrados nos dados mockados e permite tocar em qualquer um deles para abrir seus detalhes.
-
-A segunda tela é a tela de detalhe do ponto. Ela recebe o identificador do ponto selecionado, encontra o ponto correspondente na lista de dados mockados e mostra seu nome, endereço, dias e horários e o que ele recebe ou distribui.
-
-## 2. Qual parâmetro é passado da Tela 1 para a Tela 2:
-
-O parâmetro passado é `pontoId`, que contém o `id` do ponto selecionado na lista.
-
-## 3. O que muda na Tela 2 por causa do parâmetro recebido:
-
-A Tela 2 procura em `pontosMock` o ponto cujo `id` é igual ao `pontoId` recebido. Por isso, o conteúdo exibido muda de acordo com o ponto tocado na Tela 1, em vez de mostrar sempre o mesmo ponto.
-
-## 4. Cole aqui o código de navegação (o `navigate` e a leitura do `route.params`):
+- **Campo acrescentado:** Quantidade em estoque
+- **O que esse campo representa:** A quantidade de unidades disponíveis do produto no estoque da Loja Compre Bem.
+- **Regra de validação aplicada:** O campo é obrigatório e deve conter um número inteiro igual ou maior que zero.
+- **Por que essa regra faz sentido para esse campo:** A quantidade em estoque representa uma contagem de unidades. Por isso, não faz sentido aceitar o campo vazio, texto, valores negativos ou números decimais.
+- **Código da sua extensão** (trecho do `TextInput` novo + o pedaço da função de validação que você acrescentou):
 
 ```tsx
-onPress={() =>
-  navigation.navigate('Detalhe', { pontoId: ponto.id })
-}
+const [quantidade, setQuantidade] = useState('');
+const [erroQuantidade, setErroQuantidade] = useState('');
+
+<TextInput
+  style={styles.input}
+  placeholder="Ex.: 10"
+  value={quantidade}
+  onChangeText={(texto) => {
+    setQuantidade(texto);
+
+    if (erroQuantidade !== '') {
+      setErroQuantidade('');
+    }
+  }}
+  keyboardType="numeric"
+/>
+
+{erroQuantidade !== '' && (
+  <Text style={styles.erro}>{erroQuantidade}</Text>
+)}
 ```
 
 ```tsx
-function TelaDetalhePonto({ route }: DetalheProps) {
-  const { pontoId } = route.params;
-  const ponto = pontosMock.find((item) => item.id === pontoId);
+if (quantidade.trim() === '') {
+  setErroQuantidade('Informe a quantidade em estoque.');
+  return;
+}
 
-  if (!ponto) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.titulo}>Ponto não encontrado.</Text>
-      </View>
-    );
-  }
+const quantidadeNumero = Number(quantidade);
 
-  return (
-    <View style={styles.container}>
-      <ItemDetalhe ponto={ponto} />
-    </View>
+if (
+  Number.isNaN(quantidadeNumero) ||
+  !Number.isInteger(quantidadeNumero) ||
+  quantidadeNumero < 0
+) {
+  setErroQuantidade(
+    'A quantidade deve ser um número inteiro igual ou maior que zero.'
   );
+  return;
 }
 ```
+
+## Testes realizados
+
+- **Caso de erro:** ao deixar a quantidade vazia, digitar um valor negativo ou informar um número decimal, o cadastro é interrompido e uma mensagem de erro é exibida. Os valores já digitados nos campos de nome e preço permanecem preenchidos.
+- **Caso de sucesso:** ao informar uma quantidade inteira igual ou maior que zero, junto com nome e preço válidos, o produto é cadastrado e passa a aparecer normalmente na lista de produtos.
