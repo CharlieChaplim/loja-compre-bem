@@ -24,8 +24,6 @@ npx expo start
 
 Depois, abra o Expo Go SDK 57 no celular e leia o QR Code exibido pelo terminal.
 
-Se o Expo Go solicitar login, entre na sua conta do Expo no aplicativo e no terminal (`npx expo login`).
-
 ## Funcionalidades
 
 - Lista de produtos utilizando FlatList
@@ -39,3 +37,5 @@ Se o Expo Go solicitar login, entre na sua conta do Expo no aplicativo e no term
 Os campos `TextInput` do formulário receberam `minHeight: 44`, garantindo uma área mínima adequada para toque nas diferentes resoluções testadas.
 
 O registro da atividade está em `exercicio.md`.
+
+Repositório do José Roberto
