@@ -1,0 +1,26 @@
+LOJA COMPRE BEM - EXPO SDK 57
+
+1) Requisito recomendado
+   Node.js 22.13 ou superior.
+
+2) Abra um terminal nesta pasta e rode:
+   npm install
+   npx expo-doctor@latest
+   npx expo start
+
+3) Abra o Expo Go atualizado (SDK 57) no celular e leia o QR Code.
+
+4) Teste a tela de cadastro em pelo menos duas resolucoes/tamanhos de tela.
+   Verifique os campos Nome, Preco e Quantidade.
+
+5) A correcao da Aula 13 esta em App.tsx:
+   styles.input -> minHeight: 44
+
+6) O texto da atividade esta em exercicio.md.
+
+7) O repositorio que deve ser entregue e:
+   https://github.com/CharlieChaplim/loja-compre-bem
+
+IMPORTANTE:
+- Nao envie node_modules para o GitHub.
+- O package-lock.json sera criado automaticamente ao rodar npm install.

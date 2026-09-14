@@ -10,7 +10,6 @@
 - [x] Expo Go instalado no celular
 - [x] Projeto Expo inicial criado
 - [x] Projeto rodando no celular via Expo Go
-
 ## Registro da Atividade de Extensão
 
 **Organização parceira:** Instituto Mão Amiga (ONG — banco de alimentos comunitário)
@@ -21,6 +20,5 @@ Atualmente, o Instituto registra as doações, os alimentos disponíveis e as
 famílias atendidas usando planilhas e documentos em papel.
 
 **Demanda entregue pelo Instituto nesta aula (o que o app precisa resolver):**
-
 O aplicativo deverá centralizar as informações dos pontos de coleta e
 distribuição, facilitando a consulta do estoque e o controle dos atendimentos.

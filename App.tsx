@@ -28,20 +28,9 @@ type RootStackParamList = {
   CadastroProduto: undefined;
 };
 
-type ListaProps = NativeStackScreenProps<
-  RootStackParamList,
-  'ListaProdutos'
->;
-
-type DetalheProps = NativeStackScreenProps<
-  RootStackParamList,
-  'DetalheProduto'
->;
-
-type CadastroProps = NativeStackScreenProps<
-  RootStackParamList,
-  'CadastroProduto'
->;
+type ListaProps = NativeStackScreenProps<RootStackParamList, 'ListaProdutos'>;
+type DetalheProps = NativeStackScreenProps<RootStackParamList, 'DetalheProduto'>;
+type CadastroProps = NativeStackScreenProps<RootStackParamList, 'CadastroProduto'>;
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -50,66 +39,52 @@ const produtosIniciais: Produto[] = [
     id: '1',
     nome: 'Cadeira Confort Plus',
     preco: 'R$ 349,90',
-    descricao:
-      'Cadeira ergonômica com encosto acolchoado e ajuste de altura.',
+    descricao: 'Cadeira ergonômica com encosto acolchoado e ajuste de altura.',
     quantidade: 8,
   },
   {
     id: '2',
     nome: 'Mesa Office 120',
     preco: 'R$ 499,90',
-    descricao:
-      'Mesa para escritório com 120 cm de largura e estrutura reforçada.',
+    descricao: 'Mesa para escritório com 120 cm de largura e estrutura reforçada.',
     quantidade: 5,
   },
   {
     id: '3',
     nome: 'Luminária Flex',
     preco: 'R$ 89,90',
-    descricao:
-      'Luminária de mesa articulada com iluminação direcionável.',
+    descricao: 'Luminária de mesa articulada com iluminação direcionável.',
     quantidade: 15,
   },
   {
     id: '4',
     nome: 'Estante Compacta',
     preco: 'R$ 279,90',
-    descricao:
-      'Estante com cinco nichos para livros, caixas e objetos decorativos.',
+    descricao: 'Estante com cinco nichos para livros, caixas e objetos decorativos.',
     quantidade: 6,
   },
   {
     id: '5',
     nome: 'Gaveteiro Mobile',
     preco: 'R$ 229,90',
-    descricao:
-      'Gaveteiro com três compartimentos e rodízios para fácil movimentação.',
+    descricao: 'Gaveteiro com três compartimentos e rodízios para fácil movimentação.',
     quantidade: 9,
   },
   {
     id: '6',
     nome: 'Suporte para Notebook',
     preco: 'R$ 119,90',
-    descricao:
-      'Suporte elevado para notebook com estrutura leve e ventilada.',
+    descricao: 'Suporte elevado para notebook com estrutura leve e ventilada.',
     quantidade: 12,
   },
 ];
 
-function ProdutoItem({
-  produto,
-  onPress,
-}: {
-  produto: Produto;
-  onPress: () => void;
-}) {
+function ProdutoItem({ produto, onPress }: { produto: Produto; onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <Text style={styles.nome}>{produto.nome}</Text>
       <Text style={styles.preco}>{produto.preco}</Text>
-      <Text style={styles.estoqueLista}>
-        Estoque: {produto.quantidade} unidade(s)
-      </Text>
+      <Text style={styles.estoqueLista}>Estoque: {produto.quantidade} unidade(s)</Text>
       <Text style={styles.acao}>Toque para ver detalhes</Text>
     </TouchableOpacity>
   );
@@ -187,7 +162,6 @@ function TelaCadastroProduto({
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
   const [quantidade, setQuantidade] = useState('');
-
   const [erroFormulario, setErroFormulario] = useState('');
   const [erroQuantidade, setErroQuantidade] = useState('');
 
@@ -276,6 +250,7 @@ function TelaCadastroProduto({
         value={quantidade}
         onChangeText={(texto) => {
           setQuantidade(texto);
+
           if (erroQuantidade !== '') {
             setErroQuantidade('');
           }
@@ -291,10 +266,7 @@ function TelaCadastroProduto({
         <Text style={styles.erro}>{erroQuantidade}</Text>
       )}
 
-      <TouchableOpacity
-        style={styles.botaoSalvar}
-        onPress={cadastrarProduto}
-      >
+      <TouchableOpacity style={styles.botaoSalvar} onPress={cadastrarProduto}>
         <Text style={styles.textoBotao}>Cadastrar</Text>
       </TouchableOpacity>
     </View>
@@ -320,18 +292,14 @@ export default function App() {
           name="ListaProdutos"
           options={{ title: 'Produtos' }}
         >
-          {(props) => (
-            <TelaListaProdutos {...props} produtos={produtos} />
-          )}
+          {(props) => <TelaListaProdutos {...props} produtos={produtos} />}
         </Stack.Screen>
 
         <Stack.Screen
           name="DetalheProduto"
           options={{ title: 'Detalhe do produto' }}
         >
-          {(props) => (
-            <TelaDetalheProduto {...props} produtos={produtos} />
-          )}
+          {(props) => <TelaDetalheProduto {...props} produtos={produtos} />}
         </Stack.Screen>
 
         <Stack.Screen
@@ -447,6 +415,7 @@ const styles = StyleSheet.create({
   input: {
     paddingHorizontal: 12,
     paddingVertical: 10,
+    minHeight: 44,
     borderWidth: 1,
     borderColor: '#CCCCCC',
     borderRadius: 8,
