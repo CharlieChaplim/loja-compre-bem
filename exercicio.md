@@ -95,36 +95,53 @@ O teste consiste em ativar o modo compacto na lista, fechar o aplicativo por com
 
 ## Código da implementação
 
-No `App.tsx`, foi criada uma chave própria e um estado para a preferência:
+A chave e as funções de persistência ficaram separadas em `src/storage/preferenciasStorage.ts`:
 
 ```tsx
 const CHAVE_MODO_COMPACTO = '@compre_bem:modo_compacto';
-const [modoCompacto, setModoCompacto] = useState(false);
-```
 
-Ao montar o aplicativo, o valor salvo é carregado junto com os favoritos:
+export async function carregarPreferencias() {
+  const [favoritosSalvos, modoCompactoSalvo] = await Promise.all([
+    AsyncStorage.getItem(CHAVE_FAVORITOS),
+    AsyncStorage.getItem(CHAVE_MODO_COMPACTO),
+  ]);
 
-```tsx
-const [favoritosSalvos, modoCompactoSalvo] = await Promise.all([
-  AsyncStorage.getItem(CHAVE_FAVORITOS),
-  AsyncStorage.getItem(CHAVE_MODO_COMPACTO),
-]);
-
-if (modoCompactoSalvo !== null) {
-  setModoCompacto(JSON.parse(modoCompactoSalvo));
+  return {
+    favoritos: favoritosSalvos ? JSON.parse(favoritosSalvos) : [],
+    modoCompacto: modoCompactoSalvo
+      ? JSON.parse(modoCompactoSalvo)
+      : false,
+  };
 }
-```
 
-Sempre que a preferência muda, o novo valor é salvo:
-
-```tsx
-useEffect(() => {
-  if (!dadosCarregados) return;
-
-  AsyncStorage.setItem(
+export async function salvarModoCompacto(modoCompacto: boolean) {
+  await AsyncStorage.setItem(
     CHAVE_MODO_COMPACTO,
     JSON.stringify(modoCompacto)
   );
+}
+```
+
+O estado da preferência é mantido em `src/context/LojaContext.tsx`. Depois que os dados locais são carregados, qualquer mudança no modo compacto é salva:
+
+```tsx
+const [modoCompacto, setModoCompacto] = useState(false);
+const [dadosCarregados, setDadosCarregados] = useState(false);
+
+useEffect(() => {
+  async function carregarDados() {
+    const preferencias = await carregarPreferencias();
+    setFavoritos(preferencias.favoritos);
+    setModoCompacto(preferencias.modoCompacto);
+    setDadosCarregados(true);
+  }
+
+  carregarDados();
+}, []);
+
+useEffect(() => {
+  if (!dadosCarregados) return;
+  salvarModoCompacto(modoCompacto);
 }, [modoCompacto, dadosCarregados]);
 ```
 
@@ -137,7 +154,7 @@ Na tela da lista, a preferência é alterada por um `Switch`:
 />
 ```
 
-O valor é passado para cada card, que aplica um estilo menor quando o modo compacto está ativo:
+O valor é usado pelo card para aplicar o estilo compacto:
 
 ```tsx
 <View style={[styles.card, compacto && styles.cardCompacto]}>

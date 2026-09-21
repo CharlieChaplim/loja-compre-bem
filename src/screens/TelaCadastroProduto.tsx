@@ -11,16 +11,13 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLoja } from '../hooks/useLoja';
 import { RootStackParamList } from '../types/navigation';
-import { Produto } from '../types/Produto';
 
 type CadastroProps = NativeStackScreenProps<RootStackParamList, 'CadastroProduto'>;
 
-type Props = CadastroProps & {
-  adicionarProduto: (produto: Omit<Produto, 'id'>) => void;
-};
-
-export function TelaCadastroProduto({ navigation, adicionarProduto }: Props) {
+export function TelaCadastroProduto({ navigation }: CadastroProps) {
+  const { adicionarProduto } = useLoja();
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
   const [quantidade, setQuantidade] = useState('');

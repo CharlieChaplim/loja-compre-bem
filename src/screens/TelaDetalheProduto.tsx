@@ -1,23 +1,13 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLoja } from '../hooks/useLoja';
 import { RootStackParamList } from '../types/navigation';
-import { Produto } from '../types/Produto';
 
 type DetalheProps = NativeStackScreenProps<RootStackParamList, 'DetalheProduto'>;
 
-type Props = DetalheProps & {
-  produtos: Produto[];
-  favoritos: string[];
-  alternarFavorito: (produtoId: string) => void;
-};
-
-export function TelaDetalheProduto({
-  route,
-  produtos,
-  favoritos,
-  alternarFavorito,
-}: Props) {
+export function TelaDetalheProduto({ route }: DetalheProps) {
+  const { produtos, favoritos, alternarFavorito } = useLoja();
   const { produtoId } = route.params;
   const produto = produtos.find((item) => item.id === produtoId);
 

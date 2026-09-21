@@ -9,27 +9,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProdutoItem } from '../components/ProdutoItem';
+import { useLoja } from '../hooks/useLoja';
 import { RootStackParamList } from '../types/navigation';
-import { Produto } from '../types/Produto';
 
 type ListaProps = NativeStackScreenProps<RootStackParamList, 'ListaProdutos'>;
 
-type Props = ListaProps & {
-  produtos: Produto[];
-  favoritos: string[];
-  modoCompacto: boolean;
-  alternarFavorito: (produtoId: string) => void;
-  alternarModoCompacto: () => void;
-};
-
-export function TelaListaProdutos({
-  navigation,
-  produtos,
-  favoritos,
-  modoCompacto,
-  alternarFavorito,
-  alternarModoCompacto,
-}: Props) {
+export function TelaListaProdutos({ navigation }: ListaProps) {
+  const {
+    produtos,
+    favoritos,
+    modoCompacto,
+    alternarFavorito,
+    alternarModoCompacto,
+  } = useLoja();
   return (
     <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       <Text style={styles.titulo}>Loja Compre Bem</Text>
