@@ -64,3 +64,81 @@ input: {
 ## Teste antes de entregar
 
 Rodar o aplicativo em pelo menos duas resoluções diferentes e confirmar que os três campos continuam legíveis, sem cortes e fáceis de tocar.
+
+---
+
+# Exercício da Aula 16: Persistência de um Segundo Dado na Loja
+
+Preenchido no início da Aula 16, na Loja Compre Bem, antes da oficina no projeto individual.
+
+## Dado escolhido
+
+Escolhi persistir a preferência de **modo compacto** da lista de produtos. Nesse modo, os cards usam menos espaço e mostram mais produtos ao mesmo tempo na tela.
+
+Faz sentido essa escolha sobreviver ao fechamento do aplicativo porque é uma preferência de visualização do usuário. Depois de escolher como prefere ver o catálogo, não é necessário configurar a mesma opção toda vez que abrir a loja novamente.
+
+## Chave usada no AsyncStorage
+
+```text
+@compre_bem:modo_compacto
+```
+
+Ela é diferente da chave usada para os favoritos:
+
+```text
+@compre_bem:favoritos
+```
+
+## Teste da persistência
+
+O teste consiste em ativar o modo compacto na lista, fechar o aplicativo por completo e depois abri-lo novamente. Ao reabrir, o botão deve continuar ativado e os cards devem continuar no formato compacto. O mesmo teste pode ser repetido desativando a opção para confirmar que os dois valores são persistidos corretamente.
+
+## Código da implementação
+
+No `App.tsx`, foi criada uma chave própria e um estado para a preferência:
+
+```tsx
+const CHAVE_MODO_COMPACTO = '@compre_bem:modo_compacto';
+const [modoCompacto, setModoCompacto] = useState(false);
+```
+
+Ao montar o aplicativo, o valor salvo é carregado junto com os favoritos:
+
+```tsx
+const [favoritosSalvos, modoCompactoSalvo] = await Promise.all([
+  AsyncStorage.getItem(CHAVE_FAVORITOS),
+  AsyncStorage.getItem(CHAVE_MODO_COMPACTO),
+]);
+
+if (modoCompactoSalvo !== null) {
+  setModoCompacto(JSON.parse(modoCompactoSalvo));
+}
+```
+
+Sempre que a preferência muda, o novo valor é salvo:
+
+```tsx
+useEffect(() => {
+  if (!dadosCarregados) return;
+
+  AsyncStorage.setItem(
+    CHAVE_MODO_COMPACTO,
+    JSON.stringify(modoCompacto)
+  );
+}, [modoCompacto, dadosCarregados]);
+```
+
+Na tela da lista, a preferência é alterada por um `Switch`:
+
+```tsx
+<Switch
+  value={modoCompacto}
+  onValueChange={alternarModoCompacto}
+/>
+```
+
+O valor é passado para cada card, que aplica um estilo menor quando o modo compacto está ativo:
+
+```tsx
+<View style={[styles.card, compacto && styles.cardCompacto]}>
+```
