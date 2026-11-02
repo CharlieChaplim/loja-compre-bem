@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { Produto, ProdutoFormulario } from '../types/Produto';
+import { Page, Produto, ProdutoFormulario } from '../types/Produto';
 
 type ProdutoDTO = {
   produtoId: string;
@@ -11,13 +11,6 @@ type ProdutoDTO = {
   imagem: string | null;
 };
 
-type PaginaDTO = {
-  content: ProdutoDTO[];
-  number: number;
-  size: number;
-  last: boolean;
-  totalElements: number;
-};
 
 // Android Emulator -> host: 10.0.2.2; Web/iOS Simulator -> localhost.
 // No dispositivo fisico, configure EXPO_PUBLIC_API_URL com o IP LAN do computador.
@@ -30,7 +23,7 @@ export const API_URL = (process.env.EXPO_PUBLIC_API_URL?.trim() || URL_PADRAO)
 
 function mapearProduto(dto: ProdutoDTO): Produto {
   return {
-    id: dto.produtoId,
+    produtoId: dto.produtoId,
     nome: dto.nome,
     preco: Number(dto.preco),
     descricao: dto.descricao ?? '',
@@ -85,13 +78,13 @@ export type PaginaProdutos = {
 
 export async function listarProdutos(pagina = 0, busca = ''): Promise<PaginaProdutos> {
   const parametros = new URLSearchParams({ page: String(pagina), size: '20' });
-  if (busca.trim()) parametros.set('busca', busca.trim());
-  const resposta = await requisitar<PaginaDTO>(`?${parametros.toString()}`);
+  if (busca.trim()) parametros.set('filtro', busca.trim());
+  const resposta = await requisitar<Page<ProdutoDTO>>(`/filtro?${parametros.toString()}`);
   return {
     produtos: resposta.content.map(mapearProduto),
-    pagina: resposta.number,
-    temMais: !resposta.last,
-    total: resposta.totalElements,
+    pagina: resposta.page.number,
+    temMais: resposta.page.number + 1 < resposta.page.totalPages,
+    total: resposta.page.totalElements,
   };
 }
 

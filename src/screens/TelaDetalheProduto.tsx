@@ -11,17 +11,18 @@ import { RootStackParamList } from '../types/navigation';
 type DetalheProps = NativeStackScreenProps<RootStackParamList, 'DetalheProduto'>;
 
 export function TelaDetalheProduto({ route, navigation }: DetalheProps) {
-  const { produtos, favoritos, alternarFavorito, removerProduto } = useLoja();
+  const { favoritos, alternarFavorito, removerProduto } = useLoja();
   const { produtoId } = route.params;
   const [produtoRemoto, setProdutoRemoto] = useState<Produto | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
   const [confirmarExclusao, setConfirmarExclusao] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
-  const produto = produtoRemoto ?? produtos.find((item) => item.id === produtoId);
+  const produto = produtoRemoto;
 
   useFocusEffect(useCallback(() => {
     let ativo = true;
+    setProdutoRemoto(null);
     setCarregando(true);
     setConfirmarExclusao(false);
     setErro('');
@@ -50,16 +51,16 @@ export function TelaDetalheProduto({ route, navigation }: DetalheProps) {
       {carregando && <ActivityIndicator />}
       {!!erro && <Text style={styles.erro}>{erro}</Text>}
       {!produto && !carregando && <Text style={styles.titulo}>Produto não encontrado.</Text>}
-      {!!produto && (
+      {!!produto && !carregando && !erro && (
         <View style={styles.detalhe}>
           <Text style={styles.nome}>{produto.nome}</Text>
           <Text style={styles.preco}>{formatarPreco(produto.preco)}</Text>
           <Text style={styles.descricao}>{produto.descricao || 'Sem descrição.'}</Text>
           {!!produto.categoria && <Text style={styles.quantidade}>Categoria: {produto.categoria}</Text>}
           <Text style={styles.quantidade}>Quantidade em estoque: {produto.quantidade}</Text>
-          <TouchableOpacity style={styles.botao} onPress={() => alternarFavorito(produto.id)}>
+          <TouchableOpacity style={styles.botao} onPress={() => alternarFavorito(produto.produtoId)}>
             <Text style={styles.textoBotao}>
-              {favoritos.includes(produto.id) ? '★ Remover dos favoritos' : '☆ Adicionar aos favoritos'}
+              {favoritos.includes(produto.produtoId) ? '★ Remover dos favoritos' : '☆ Adicionar aos favoritos'}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('CadastroProduto', { produtoId })}>

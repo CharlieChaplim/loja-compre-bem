@@ -1,6 +1,6 @@
 // Modelo usado pela interface: UUID do backend e preco numerico em reais.
 export type Produto = {
-  id: string;
+  produtoId: string;
   nome: string;
   preco: number;
   descricao: string;
@@ -24,3 +24,14 @@ export function formatarPreco(preco: number): string {
     currency: 'BRL',
   }).format(preco);
 }
+
+// Estrutura de paginacao retornada pelo Spring Data em modo via_dto.
+export type Page<T> = {
+  content: T[];
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
+};

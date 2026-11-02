@@ -77,14 +77,14 @@ export function TelaListaProdutos({ navigation }: ListaProps) {
 
       <FlatList
         data={produtos}
-        keyExtractor={(produto) => produto.id}
+        keyExtractor={(produto) => produto.produtoId}
         renderItem={({ item }) => (
           <ProdutoItem
             produto={item}
-            favorito={favoritos.includes(item.id)}
+            favorito={favoritos.includes(item.produtoId)}
             compacto={modoCompacto}
-            onPress={() => navigation.navigate('DetalheProduto', { produtoId: item.id })}
-            onFavoritar={() => alternarFavorito(item.id)}
+            onPress={() => navigation.navigate('DetalheProduto', { produtoId: item.produtoId })}
+            onFavoritar={() => alternarFavorito(item.produtoId)}
           />
         )}
         refreshing={buscando && produtos.length > 0}
