@@ -90,8 +90,8 @@ export function LojaProvider({ children }: { children: ReactNode }) {
       const resultado = await listarProdutos(paginaAtual, buscaRef.current);
       if (versao !== versaoRequisicaoRef.current) return;
       setProdutos((atual) => {
-        const ids = new Set(atual.map((produto) => produto.id));
-        return [...atual, ...resultado.produtos.filter((produto) => !ids.has(produto.id))];
+        const ids = new Set(atual.map((produto) => produto.produtoId));
+        return [...atual, ...resultado.produtos.filter((produto) => !ids.has(produto.produtoId))];
       });
       proximaPaginaRef.current = paginaAtual + 1;
       podeCarregarMaisRef.current = resultado.temMais;

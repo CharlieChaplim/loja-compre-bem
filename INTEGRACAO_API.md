@@ -4,8 +4,8 @@ O catálogo deixou de usar a lista estática `src/data/produtos.ts` e agora cons
 
 ## Funcionalidades
 
-- `GET /api/v1/produtos?page=0&size=20`: página inicial da lista; botão **Carregar mais produtos** busca outras páginas.
-- `GET /api/v1/produtos?busca=...`: busca pelo nome na API.
+- `GET /api/v1/produtos/filtro?page=0&size=20`: página inicial da lista; botão **Carregar mais produtos** busca outras páginas.
+- `GET /api/v1/produtos/filtro?filtro=...`: busca pelo nome na API.
 - `GET /api/v1/produtos/{uuid}`: abre detalhes atuais do produto.
 - `POST /api/v1/produtos`: cadastra produto e sua quantidade em estoque.
 - `PUT /api/v1/produtos/{uuid}`: salva alterações de produto e estoque.
@@ -63,3 +63,12 @@ Os valores de `.env` são incorporados pelo Expo durante o desenvolvimento: depo
 - Não há autenticação. A API existente permite operações de escrita sem login; publique somente após implantar autenticação/autorização.
 - O backend já fornece `imagem` como texto, mas o app não renderiza as imagens: o foco desta alteração é integração CRUD.
 - A API usa H2 em arquivo, não servidor de produção. Os favoritos são locais por dispositivo e não sincronizados entre usuários.
+
+## Atividade: lista e detalhe a partir da API
+
+- O tipo `Produto` usa `produtoId: string` (UUID do backend).
+- O tipo generico `Page<T>` representa `content` e `page` do Spring Data com `via_dto`.
+- A Lista consulta `GET /api/v1/produtos/filtro?page=0&size=20` e apresenta os objetos de `content` sem aplicar filtro local.
+- A pesquisa envia `filtro` ao backend; com texto vazio devolve todos os produtos paginados.
+- O Detalhe consulta `GET /api/v1/produtos/{produtoId}` ao ganhar foco e nao usa fallback de dados locais.
+- Para testar: `npx tsc --noEmit`; rode tambem a API na porta 8080 e execute `npx expo start -c`.
