@@ -11,9 +11,8 @@ type ProdutoDTO = {
   imagem: string | null;
 };
 
-
 // Android Emulator -> host: 10.0.2.2; Web/iOS Simulator -> localhost.
-// No dispositivo fisico, configure EXPO_PUBLIC_API_URL com o IP LAN do computador.
+// Em dispositivo fisico com Expo Go, configure EXPO_PUBLIC_API_URL no .env com o IP LAN da sua maquina.
 const URL_PADRAO = Platform.OS === 'android'
   ? 'http://10.0.2.2:8080'
   : 'http://localhost:8080';
@@ -27,7 +26,7 @@ function mapearProduto(dto: ProdutoDTO): Produto {
     nome: dto.nome,
     preco: Number(dto.preco),
     descricao: dto.descricao ?? '',
-    quantidade: dto.quantidade,
+    quantidade: dto.quantidade ?? 0,
     categoria: dto.categoria ?? '',
     imagem: dto.imagem ?? null,
   };
@@ -35,7 +34,8 @@ function mapearProduto(dto: ProdutoDTO): Produto {
 
 async function requisitar<T>(caminho: string, init?: RequestInit): Promise<T> {
   const controlador = new AbortController();
-  const timeout = setTimeout(() => controlador.abort(), 15000);
+  const timeout = setTimeout(() => controlador.abort(), 12000);
+
   try {
     const resposta = await fetch(`${API_URL}/api/v1/produtos${caminho}`, {
       ...init,
@@ -47,21 +47,37 @@ async function requisitar<T>(caminho: string, init?: RequestInit): Promise<T> {
       let detalhe = '';
       try {
         const corpo = await resposta.json();
-        detalhe = corpo.detail || corpo.message || '';
+        if (Array.isArray(corpo.errors) && corpo.errors.length > 0) {
+          detalhe = corpo.errors.map((e: any) => e.defaultMessage || e.message || String(e)).join('\n');
+        } else if (corpo.errors && typeof corpo.errors === 'object') {
+          detalhe = Object.values(corpo.errors).join('\n');
+        } else {
+          detalhe = corpo.detail || corpo.message || corpo.error || '';
+        }
       } catch {
-        // O corpo do erro pode estar vazio ou nao ser JSON.
+        // Corpo vazio ou nao-JSON
       }
-      throw new Error(detalhe || `API retornou HTTP ${resposta.status}.`);
+
+      if (resposta.status === 404) {
+        throw new Error(detalhe || 'Produto não encontrado no servidor (HTTP 404).');
+      }
+      if (resposta.status === 400) {
+        throw new Error(detalhe || 'Dados inválidos enviados para a API (HTTP 400). Confira os campos.');
+      }
+      if (resposta.status >= 500) {
+        throw new Error(detalhe || 'O servidor da API encontrou um erro interno (HTTP 500). Tente mais tarde.');
+      }
+      throw new Error(detalhe || `A requisição falhou com status HTTP ${resposta.status}.`);
     }
 
     if (resposta.status === 204) return undefined as T;
     return (await resposta.json()) as T;
   } catch (erro) {
     if (erro instanceof Error && erro.name === 'AbortError') {
-      throw new Error('A API demorou para responder. Tente novamente.');
+      throw new Error('A API demorou muito para responder (tempo limite esgotado). Tente novamente.');
     }
     if (erro instanceof TypeError) {
-      throw new Error(`Nao foi possivel conectar a ${API_URL}. Confira a rede e se a API esta ligada.`);
+      throw new Error(`Não foi possível conectar ao servidor em ${API_URL}. Verifique sua conexão e se a API está ligada.`);
     }
     throw erro;
   } finally {

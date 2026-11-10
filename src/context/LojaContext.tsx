@@ -61,6 +61,7 @@ export function LojaProvider({ children }: { children: ReactNode }) {
     podeCarregarMaisRef.current = false;
     carregandoMaisRef.current = false;
     setCarregandoMais(false);
+
     try {
       const pagina = await listarProdutos(0, termo);
       if (versao !== versaoRequisicaoRef.current) return;
@@ -85,20 +86,23 @@ export function LojaProvider({ children }: { children: ReactNode }) {
     const paginaAtual = proximaPaginaRef.current;
     carregandoMaisRef.current = true;
     setCarregandoMais(true);
-    setErroProdutos(null);
+
     try {
       const resultado = await listarProdutos(paginaAtual, buscaRef.current);
       if (versao !== versaoRequisicaoRef.current) return;
+
       setProdutos((atual) => {
-        const ids = new Set(atual.map((produto) => produto.produtoId));
-        return [...atual, ...resultado.produtos.filter((produto) => !ids.has(produto.produtoId))];
+        const idsExistentes = new Set(atual.map((p) => p.produtoId));
+        const novos = resultado.produtos.filter((p) => !idsExistentes.has(p.produtoId));
+        return [...atual, ...novos];
       });
+
       proximaPaginaRef.current = paginaAtual + 1;
       podeCarregarMaisRef.current = resultado.temMais;
       setTemMaisProdutos(resultado.temMais);
     } catch (erro) {
       if (versao === versaoRequisicaoRef.current) {
-        setErroProdutos(erro instanceof Error ? erro.message : 'Falha ao carregar proxima pagina.');
+        setErroProdutos(erro instanceof Error ? erro.message : 'Falha ao carregar mais produtos.');
       }
     } finally {
       if (versao === versaoRequisicaoRef.current) {
@@ -108,7 +112,9 @@ export function LojaProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  useEffect(() => { void buscarProdutos(''); }, [buscarProdutos]);
+  useEffect(() => {
+    void buscarProdutos('');
+  }, [buscarProdutos]);
 
   useEffect(() => {
     let ativo = true;
@@ -118,9 +124,13 @@ export function LojaProvider({ children }: { children: ReactNode }) {
         setFavoritos(preferencias.favoritos);
         setModoCompacto(preferencias.modoCompacto);
       })
-      .catch((erro) => console.log('Erro ao carregar preferencias locais.', erro))
-      .finally(() => { if (ativo) setDadosCarregados(true); });
-    return () => { ativo = false; };
+      .catch((erro) => console.log('Erro ao carregar preferências locais.', erro))
+      .finally(() => {
+        if (ativo) setDadosCarregados(true);
+      });
+    return () => {
+      ativo = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -154,20 +164,36 @@ export function LojaProvider({ children }: { children: ReactNode }) {
   }, [recarregarProdutos]);
 
   function alternarFavorito(produtoId: string) {
-    setFavoritos((atuais) => atuais.includes(produtoId)
-      ? atuais.filter((id) => id !== produtoId)
-      : [...atuais, produtoId]);
+    setFavoritos((atuais) =>
+      atuais.includes(produtoId) ? atuais.filter((id) => id !== produtoId) : [...atuais, produtoId]
+    );
   }
 
-  function alternarModoCompacto() { setModoCompacto((atual) => !atual); }
+  function alternarModoCompacto() {
+    setModoCompacto((atual) => !atual);
+  }
 
   return (
-    <LojaContext.Provider value={{
-      produtos, favoritos, modoCompacto, buscando, carregandoMais, erroProdutos,
-      temMaisProdutos, buscaAtual, buscarProdutos, recarregarProdutos,
-      carregarMaisProdutos, adicionarProduto, atualizarProduto, removerProduto,
-      alternarFavorito, alternarModoCompacto,
-    }}>
+    <LojaContext.Provider
+      value={{
+        produtos,
+        favoritos,
+        modoCompacto,
+        buscando,
+        carregandoMais,
+        erroProdutos,
+        temMaisProdutos,
+        buscaAtual,
+        buscarProdutos,
+        recarregarProdutos,
+        carregarMaisProdutos,
+        adicionarProduto,
+        atualizarProduto,
+        removerProduto,
+        alternarFavorito,
+        alternarModoCompacto,
+      }}
+    >
       {children}
     </LojaContext.Provider>
   );

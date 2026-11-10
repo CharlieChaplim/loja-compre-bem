@@ -13,25 +13,36 @@ type DetalheProps = NativeStackScreenProps<RootStackParamList, 'DetalheProduto'>
 export function TelaDetalheProduto({ route, navigation }: DetalheProps) {
   const { favoritos, alternarFavorito, removerProduto } = useLoja();
   const { produtoId } = route.params;
-  const [produtoRemoto, setProdutoRemoto] = useState<Produto | null>(null);
+
+  const [produto, setProduto] = useState<Produto | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
   const [confirmarExclusao, setConfirmarExclusao] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
-  const produto = produtoRemoto;
 
-  useFocusEffect(useCallback(() => {
+  const carregarDetalhes = useCallback(() => {
     let ativo = true;
-    setProdutoRemoto(null);
     setCarregando(true);
     setConfirmarExclusao(false);
     setErro('');
+
     consultarProduto(produtoId)
-      .then((item) => { if (ativo) setProdutoRemoto(item); })
-      .catch((falha) => { if (ativo) setErro(falha instanceof Error ? falha.message : 'Erro ao consultar produto.'); })
-      .finally(() => { if (ativo) setCarregando(false); });
-    return () => { ativo = false; };
-  }, [produtoId]));
+      .then((item) => {
+        if (ativo) setProduto(item);
+      })
+      .catch((falha) => {
+        if (ativo) setErro(falha instanceof Error ? falha.message : 'Erro ao consultar produto.');
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [produtoId]);
+
+  useFocusEffect(carregarDetalhes);
 
   async function confirmarRemocao() {
     setExcluindo(true);
@@ -48,35 +59,74 @@ export function TelaDetalheProduto({ route, navigation }: DetalheProps) {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
-      {carregando && <ActivityIndicator />}
-      {!!erro && <Text style={styles.erro}>{erro}</Text>}
-      {!produto && !carregando && <Text style={styles.titulo}>Produto não encontrado.</Text>}
-      {!!produto && !carregando && !erro && (
+      {carregando && (
+        <View style={styles.centro}>
+          <ActivityIndicator size="large" color="#1B3A5C" />
+          <Text style={styles.textoCarregando}>Carregando detalhes do produto...</Text>
+        </View>
+      )}
+
+      {/* Tratamento quando o produto não existe ou falha a conexão (sem tela em branco) */}
+      {!carregando && (!!erro || !produto) && (
+        <View style={styles.cardErro}>
+          <Text style={styles.tituloErro}>
+            {erro.includes('404') || !produto ? 'Produto não encontrado' : 'Falha de comunicação'}
+          </Text>
+          <Text style={styles.textoErro}>
+            {erro || 'O produto selecionado não foi encontrado ou já foi excluído do catálogo.'}
+          </Text>
+          <TouchableOpacity style={styles.botaoPrincipal} onPress={() => carregarDetalhes()}>
+            <Text style={styles.textoBotaoPrincipal}>Tentar novamente</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.botaoSecundario} onPress={() => navigation.goBack()}>
+            <Text style={styles.textoBotaoSecundario}>Voltar para a lista</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Exibição normal do produto */}
+      {!carregando && !erro && !!produto && (
         <View style={styles.detalhe}>
           <Text style={styles.nome}>{produto.nome}</Text>
           <Text style={styles.preco}>{formatarPreco(produto.preco)}</Text>
-          <Text style={styles.descricao}>{produto.descricao || 'Sem descrição.'}</Text>
-          {!!produto.categoria && <Text style={styles.quantidade}>Categoria: {produto.categoria}</Text>}
-          <Text style={styles.quantidade}>Quantidade em estoque: {produto.quantidade}</Text>
+          <Text style={styles.descricao}>{produto.descricao || 'Sem descrição cadastrada.'}</Text>
+          {!!produto.categoria && <Text style={styles.metadado}>Categoria: {produto.categoria}</Text>}
+          <Text style={styles.metadado}>Quantidade em estoque: {produto.quantidade} unidade(s)</Text>
+
           <TouchableOpacity style={styles.botao} onPress={() => alternarFavorito(produto.produtoId)}>
             <Text style={styles.textoBotao}>
               {favoritos.includes(produto.produtoId) ? '★ Remover dos favoritos' : '☆ Adicionar aos favoritos'}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('CadastroProduto', { produtoId })}>
+
+          <TouchableOpacity
+            style={styles.botao}
+            onPress={() => navigation.navigate('CadastroProduto', { produtoId })}
+          >
             <Text style={styles.textoBotao}>Editar produto</Text>
           </TouchableOpacity>
+
           {!confirmarExclusao ? (
             <TouchableOpacity style={styles.botao} onPress={() => setConfirmarExclusao(true)}>
               <Text style={styles.textoExcluir}>Excluir produto</Text>
             </TouchableOpacity>
           ) : (
-            <View>
-              <Text style={styles.aviso}>Excluir definitivamente este produto?</Text>
-              <TouchableOpacity style={styles.botao} disabled={excluindo} onPress={() => void confirmarRemocao()}>
-                <Text style={styles.textoExcluir}>{excluindo ? 'Excluindo...' : 'Sim, excluir'}</Text>
+            <View style={styles.blocoExclusao}>
+              <Text style={styles.aviso}>Excluir definitivamente este produto da loja?</Text>
+              <TouchableOpacity
+                style={[styles.botao, styles.botaoConfirmarExcluir]}
+                disabled={excluindo}
+                onPress={() => void confirmarRemocao()}
+              >
+                <Text style={styles.textoConfirmarExclusao}>
+                  {excluindo ? 'Excluindo...' : 'Sim, excluir do catálogo'}
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.botao} disabled={excluindo} onPress={() => setConfirmarExclusao(false)}>
+              <TouchableOpacity
+                style={styles.botao}
+                disabled={excluindo}
+                onPress={() => setConfirmarExclusao(false)}
+              >
                 <Text style={styles.textoBotao}>Cancelar</Text>
               </TouchableOpacity>
             </View>
@@ -89,18 +139,58 @@ export function TelaDetalheProduto({ route, navigation }: DetalheProps) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#FFFFFF' },
-  titulo: { fontSize: 24, fontWeight: 'bold', color: '#1B3A5C' },
+  centro: { paddingVertical: 40, alignItems: 'center' },
+  textoCarregando: { marginTop: 10, color: '#555555', fontSize: 15 },
   detalhe: { padding: 18, borderRadius: 8, backgroundColor: '#F3F5F7' },
   nome: { fontSize: 22, fontWeight: 'bold', color: '#1B3A5C' },
-  preco: { marginTop: 10, fontSize: 18, color: '#2E7D32' },
+  preco: { marginTop: 10, fontSize: 18, color: '#2E7D32', fontWeight: 'bold' },
   descricao: { marginTop: 14, fontSize: 15, lineHeight: 22, color: '#333333' },
-  quantidade: { marginTop: 14, fontSize: 15, fontWeight: 'bold', color: '#1B3A5C' },
+  metadado: { marginTop: 12, fontSize: 15, fontWeight: 'bold', color: '#1B3A5C' },
   botao: {
-    minHeight: 44, marginTop: 12, justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1, borderColor: '#1B3A5C', borderRadius: 8,
+    minHeight: 44,
+    marginTop: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#1B3A5C',
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
   },
   textoBotao: { fontSize: 15, fontWeight: 'bold', color: '#1B3A5C' },
   textoExcluir: { fontSize: 15, fontWeight: 'bold', color: '#B00020' },
-  aviso: { marginTop: 18, fontWeight: 'bold', color: '#B00020' },
-  erro: { color: '#B00020', marginBottom: 12 },
+  blocoExclusao: { marginTop: 14, padding: 12, borderRadius: 8, backgroundColor: '#FFEBEE' },
+  aviso: { fontWeight: 'bold', color: '#B00020', textAlign: 'center', marginBottom: 6 },
+  botaoConfirmarExcluir: { backgroundColor: '#B00020', borderColor: '#B00020' },
+  textoConfirmarExclusao: { fontSize: 15, fontWeight: 'bold', color: '#FFFFFF' },
+  cardErro: {
+    padding: 20,
+    borderRadius: 8,
+    backgroundColor: '#FFEBEE',
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+    alignItems: 'center',
+  },
+  tituloErro: { fontSize: 18, fontWeight: 'bold', color: '#B00020', marginBottom: 8, textAlign: 'center' },
+  textoErro: { fontSize: 15, color: '#444444', textAlign: 'center', marginBottom: 16, lineHeight: 20 },
+  botaoPrincipal: {
+    minHeight: 44,
+    width: '100%',
+    backgroundColor: '#B00020',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  textoBotaoPrincipal: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 15 },
+  botaoSecundario: {
+    minHeight: 44,
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#B00020',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textoBotaoSecundario: { color: '#B00020', fontWeight: 'bold', fontSize: 15 },
 });
